@@ -1,0 +1,78 @@
+{
+  "name": "raycast-unblock-monorepo",
+  "type": "module",
+  "version": "0.7.0-beta.0",
+  "packageManager": "pnpm@9.0.6",
+  "description": "Unblock all features in Raycast Pro Plan",
+  "author": "wibus-wee <wibus@qq.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/wibus-wee/raycast-unblock#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wibus-wee/raycast-unblock.git"
+  },
+  "bugs": "https://github.com/wibus-wee/raycast-unblock/issues",
+  "keywords": [],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs"
+    }
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./dist/*"
+      ]
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "bundle": "sh scripts/single-application.sh",
+    "build:core": "pnpm -C packages/core build",
+    "build:docs": "pnpm -C packages/docs docs:build",
+    "build:ray": "pnpm -C packages/raycast build",
+    "dev:core": "pnpm -C packages/core dev",
+    "dev:ray": "pnpm -C packages/raycast dev",
+    "dev:docs": "pnpm -C packages/docs docs:dev",
+    "lint": "eslint .",
+    "typecheck:core": "pnpm -C packages/core run typecheck",
+    "typecheck:ray": "pnpm -C packages/raycast run typecheck",
+    "typecheck:shared": "pnpm -C packages/shared run typecheck",
+    "typecheck": "pnpm typecheck:core && pnpm typecheck:ray && pnpm typecheck:shared",
+    "test": "pnpm test:core",
+    "test:core": "pnpm -C packages/core test",
+    "release": "bumpp",
+    "prepare": "simple-git-hooks"
+  },
+  "dependencies": {
+    "formdata-node": "6.0.3",
+    "ofetch": "^1.3.4"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^2.21.1",
+    "@types/node": "^20.14.2",
+    "bumpp": "^9.4.1",
+    "eslint": "^9.4.0",
+    "lint-staged": "^15.2.7",
+    "pnpm": "^9.0.6",
+    "simple-git-hooks": "^2.11.1",
+    "tslib": "^2.6.3",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  },
+  "resolutions": {
+    "@babel/traverse": "7.24.7",
+    "cohere-ai": "7.9.5"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm lint-staged"
+  },
+  "lint-staged": {
+    "*": "eslint --fix"
+  }
+}

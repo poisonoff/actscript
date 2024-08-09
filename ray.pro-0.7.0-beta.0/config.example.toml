@@ -1,0 +1,153 @@
+# ##
+#
+# [DANGER]
+# The example file here is outdated,
+# please visit the official documentation to get the latest configuration file example.
+#
+# 🔗 https://wibus-wee.github.io/raycast-unblock/
+#
+# [WARNING]
+# The example file here only keeps the minimum available configuration,
+# please refer to the official documentation for more configuration items.
+# ##
+
+[General]
+# If you deploy this service on a remote server,
+# it is recommended to set mode to "remote", maybe one day this program will be used
+# and you **should** set host to "0.0.0.0", or you can't access the service from the outside
+mode = "local"
+port = 3000
+host = "0.0.0.0"
+# If there are some problems, you can set debug & logger to true
+debug = false
+# Fastify Logger
+logger = false
+# If you want the service to listen to the changes of the configuration file and update automatically,
+# you can set watch to true
+watch = false
+
+[General.Https]
+# If you want to use HTTPS, you can set the following configuration
+# enabled = true
+# # You can specify the host to the certificate file (auto generate mode)
+# host = '192.168.3.2'
+# # You can also specify the path to your existing certificate file
+# key = "path
+# cert = "path"
+# ca = "path"
+
+[AI]
+default = "openai"
+# If the parameter is not set in the specific AI service,
+# this value will be used
+# For example:
+#    If I don't set the temperature parameter in AI.OpenAI, this value will be used
+#    But if I set the temperature parameter in AI.Gemini, the temperature parameter in AI.Gemini will be used
+# temperature = 0.5
+# max_tokens = 100
+
+[AI.Functions]
+# You should enter plugin IDs that you want to enable here.
+# The following plugins are supported:
+# serp, web_search
+# You can go to src/features/ai/functionsCall to see more details.
+plugins = [
+  'serp',
+  'web_search'
+]
+
+[AI.Functions.Serp]
+apyHub_api_key = ""
+# tavily_ai_api_key = "" # Tavily currently doesn't support.
+
+[AI.OpenAI]
+# If the default model is not set,
+# or...
+# if the default model is set,
+# but the specific AI service's model is not set,
+# the default model written in the code will be used
+# default = "gpt-3.5-turbo-16k.legacy"
+# You can edit the base_url if you want to use the custom OpenAI server
+# base_url = "https://api.openai.com/v1"
+api_key = "YOUR_API_KEY"
+
+# if you'd like to use azure openai
+# is_azure = true
+# base_url = "https://<resource_name>.openai.azure.com"
+# azure_deployment_name = "YOUR_AZURE_DEPLOYMENT_ID" # if not provided, use req.body.model
+
+# If the parameter is set in the specific AI service
+# this value will be used, and it has the highest priority
+# temperature = 0.5
+# max_tokens = 100
+
+# Custom OpenAI Model
+# You can add your own OpenAI model just like the following:
+# # [NOTICE] You shouldn't use the dot in the model name. It will be parsed as a section
+# [AI.OpenAI.Models.GPT4]
+# id = "gpt-4-0125-preview" # if it's not provided, it will be generated from the Object key. For example, here it will be "gpt4"
+# model = "gpt-4-0125-preview" # if it's not provided, it will be generated from the Object key.
+# name = "GPT-4 (Preview)" # if it's not provided, it will be generated from the Object key.
+# description = "GPT-4 is OpenAI’s most capable model with broad general knowledge, allowing it to follow complex instructions and solve difficult problems.\n"
+# speed = 3  # if it's not provided, the default value will be used.
+# intelligence = 3  # if it's not provided, the default value will be used.
+# context = 8  # if it's not provided, the default value will be used.
+# status = "beta"
+# [AI.OpenAI.Models.GPT4.Capabilities] # Features control
+# image_generation = true # Not supported yet
+# web_search = true # The premise is that the model needs to support Function Call.
+
+[AI.Groq]
+# refresh_token = '<your refresh token>'
+# temperature = 0.5
+# max_tokens = 100
+
+[AI.Gemini]
+api_key = ""
+# temperature = 0.5
+# max_tokens = 100
+
+[AI.Cohere]
+email = ""
+password = ""
+
+[Translate]
+# You can choose the default translation service from the following:
+# shortcut, deeplx, ai, libretranslate, google
+# Default: deeplx
+default = "deeplx"
+
+# Maybe one day there will be a [Translate.Shortcuts] configuration here...
+# [Translate.Shortcuts]
+
+[Translate.DeepLX]
+# proxy_endpoints = []
+# access_tokens = []
+
+[Translate.AI]
+# If the default model is not set,
+# or...
+# if the default model is set,
+# but the specific AI service's model is not set,
+# the default model written in the code will be used
+# Default: openai
+default = "openai"
+# The model used by the AI service
+# (only effective for openai, groq)
+# Default: gpt-3.5-turbo
+model = "gpt-3.5-turbo"
+
+[Translate.LibreTranslate]
+base_url = "https://libretranslate.com"
+# You can choose the type from the following:
+# reserve, api
+# Default: reserve
+type = "reserve"
+# If you choose api, you should set the api_key
+api_key = ""
+
+[Sync]
+# The location of the sync file, default is "icloud", and you can also set it to "local"
+# # The iCloud storage solution is only effective when deployed on the macOS client
+# # **iCloud storage solution** is the *default* option in *macOS* deployments
+type = "icloud" # icloud / local

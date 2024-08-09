@@ -1,0 +1,83 @@
+name: Deploy
+
+on:
+  # push:
+  #   branches: [main]
+  #   paths-ignore:
+  #     - packages/core/**
+  #     - packages/shared/**
+  #     - test/**
+  #     - README.md
+  #     - LICENSE
+  #     - .github/workflows/release.yml
+  #     - .github/workflows/docker.yml
+  #     - .github/workflows/ci.yml
+  # pull_request:
+  #   branches:
+  #     - main
+  workflow_dispatch:
+
+permissions:
+  write-all
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+
+      - name: Set node
+        uses: actions/setup-node@v4
+        with:
+          node-version: latest
+
+      - name: Setup
+        run: npm i -g @antfu/ni
+
+      - name: Install
+        run: nci
+
+      - name: Lint
+        run: nr lint
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Cache pnpm modules
+        uses: actions/cache@v4
+        env:
+          cache-name: cache-pnpm-modules
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ matrix.node-version }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-${{ matrix.node-version }}-
+      - uses: pnpm/action-setup@v3
+        with:
+          version: latest
+          run_install: false
+
+      - name: Build project
+        run: |
+          pnpm i
+          pnpm run build:docs
+      - name: Deploy
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: packages/docs/.vitepress/dist
+    env:
+      CI: true

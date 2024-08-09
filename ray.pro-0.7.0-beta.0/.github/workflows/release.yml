@@ -1,0 +1,137 @@
+name: Release
+
+permissions:
+  contents: write
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    outputs:
+      id: release
+      value: ${{ steps.create_release.outputs.release_id }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - run: npx changelogithub
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+  upload:
+    needs: release
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, macos-13]
+      fail-fast: false
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: latest
+
+      - name: Setup
+        run: npm i -g @antfu/ni
+
+      - name: Install
+        run: nci
+
+      - name: Build
+        run: |
+          nr build:core
+          sh scripts/single-application.sh
+
+      - name: Build Raycast Extension (macOS Only)
+        if: matrix.os == 'macos-latest'
+        run: |
+          nr build:ray
+          mv packages/raycast/dist dist/raycast-unblock
+          cd dist
+          zip -r raycast-unblock-extension.zip raycast-unblock
+
+      - name: Upload Release Asset for JS
+        if: matrix.os == 'ubuntu-latest' && needs.release.outputs.value != ''
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: dist/index.js
+          asset_name: raycast-unblock-${{ matrix.os }}-${{ github.ref }}-js
+          asset_content_type: application/javascript
+
+      - name: Upload Release Assets for Application
+        if: matrix.os == 'macos-latest' && needs.release.outputs.value != ''
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: dist/raycast-unblock-app
+          asset_name: raycast-unblock-${{ matrix.os }}-${{ github.ref }}-app
+
+      - name: Upload Release Assets for Raycast Extension
+        if: matrix.os == 'macos-latest' && needs.release.outputs.value != ''
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: dist/raycast-unblock-extension.zip
+          asset_name: raycast-unblock-${{ matrix.os }}-${{ github.ref }}-extension.zip
+
+      - name: Upload Artifact for JS
+        uses: actions/upload-artifact@v4
+        with:
+          name: raycast-unblock-${{ matrix.os }}-js
+          path: dist/index.js
+
+      - name: Upload Artifact for App
+        uses: actions/upload-artifact@v4
+        with:
+          name: raycast-unblock-${{ matrix.os }}-${{ env.PACKAGE_ARCH }}-app
+          path: dist/raycast-unblock-app
+
+      - name: Upload Artifact for Raycast Extension
+        if: matrix.os == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: raycast-unblock-${{ matrix.os }}-${{ matrix.node }}-ray
+          path: dist/raycast-unblock-extension.zip

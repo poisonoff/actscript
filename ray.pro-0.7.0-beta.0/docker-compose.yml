@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: raycast-unblock
+    # ## You can also add arguments to the command line here, such as the following
+    # ## If you need to use config.toml file, please uncomment the following line ####
+    command: --config=./configs/config.toml
+    image: wibuswee/raycast-unblock:latest
+    environment:
+      - TZ=Asia/Shanghai
+      # ## You can also use proxy settings here, such as the following
+      # - HTTP_PROXY=
+      # - HTTPS_PROXY=
+    # ## If you need to use config.toml file, please uncomment the following line ####
+    volumes:
+      - ./configs:/app/configs
+      # If you want to operate the Sync file, you can uncomment the following line
+      # - ./raycast_sync:/root/raycast_sync
+    ports:
+      - '3000:3000'
+    restart: always
+    healthcheck:
+      test: [CMD, curl, -f, 'http://127.0.0.1:3000']
+      interval: 1m30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
